@@ -9,15 +9,31 @@ import xgboost as xgb
 from experiments import prepare_uniform_weights, normalize_weights
 from sklearn.ensemble import RandomForestClassifier
 
+# configures a basic root logger
 logging.basicConfig()
+# returns logger with specified name - root logger is default
 logger = logging.getLogger()
+# sets threshold - logs messages with level = INFO and above
 logger.setLevel(logging.INFO)
 
 
 def init_trees(max_tree_depth, n_parties, n_local_models, task_type, args):
+    '''
+
+    Args:
+        max_tree_depth: levels to a tree
+        n_parties: number of clients in our case
+        n_local_models: number of teacher models
+        task_type: classification or regression
+        args:
+
+    Returns: list of tree values
+
+    '''
     n_total_trees = n_parties * n_local_models
     trees = {tree_i: None for tree_i in range(n_total_trees)}
 
+    # go through each tree and classify it's model type and class type, then us built in functions
     for tree_i in range(n_total_trees):
         if args.model == 'tree' or args.model == 'gbdt_tree':
             if task_type == "binary_cls":
@@ -30,6 +46,8 @@ def init_trees(max_tree_depth, n_parties, n_local_models, task_type, args):
             trees[tree_i] = RandomForestClassifier(max_depth = args.max_tree_depth, n_estimators=args.n_stu_trees)
 
         elif args.model == 'gbdt':
+            # hist tree method - an approximation tree method used in LightGBM
+            # fastest algorithm as is only sketches once
             trees[tree_i] = xgb.XGBClassifier(max_depth=args.max_tree_depth, n_estimators = args.n_stu_trees, learning_rate=args.lr, gamma=1, reg_lambda=1, tree_method='hist')
         elif args.model == 'gbdt_ntree':
             trees[tree_i] = xgb.XGBClassifier(max_depth=args.max_tree_depth, n_estimators = args.n_stu_trees, learning_rate=args.lr, gamma=1,
