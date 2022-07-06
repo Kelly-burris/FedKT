@@ -1,30 +1,28 @@
-import numpy as np
-import json
-import torch
-import torch.optim as optim
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision.transforms as transforms
-import torch.utils.data as data
-from sklearn.metrics import confusion_matrix
-from sklearn.datasets import load_svmlight_file
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn import tree
-
 import argparse
-import logging
-import os
 import copy
 import datetime
+import json
+import logging
 import math
-
-import xgboost as xgb
+import numpy as np
+import os
 import pandas as pd
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+import torch.utils.data as data
+import torchvision.transforms as transforms
+import xgboost as xgb
+from sklearn import tree
+from sklearn.datasets import load_svmlight_file
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 
-from model import *
 from datasets import MNIST_truncated, SVHN_custom, CustomTensorDataset, CelebA_custom, ImageFolder_custom, \
     PneumoniaDataset, ImageFolder_public
+from model import *
 from trees import *
 
 libsvm_datasets = {
@@ -452,7 +450,7 @@ def prepare_uniform_weights(n_classes, net_cnt, fill_val=1):
     '''
 
     Args:
-        n_classes: number of clients ?
+        n_classes: number of classifications ?
         net_cnt: length of the model
         fill_val: filler values for array
 
@@ -1433,7 +1431,7 @@ if __name__ == '__main__':
 
     if args.log_file_name is None:
         args.log_file_name = 'experiment_log-%s-%d-%d' % (
-        datetime.datetime.now().strftime("%Y-%m-%d-%H:%M-%S"), args.init_seed, args.trials)
+            datetime.datetime.now().strftime("%Y-%m-%d-%H:%M-%S"), args.init_seed, args.trials)
     log_path = args.log_file_name + '.log'
     logging.basicConfig(
         filename=os.path.join(args.logdir, log_path),
@@ -1988,11 +1986,13 @@ if __name__ == '__main__':
                 # tea_nets.append(stu_net)
 
         elif args.alg == 'fedkt' or args.alg == 'fedkt_fedavg' or args.alg == 'fedkt_fedprox' or args.alg == 'simenb':
+            # if a seed is passed in to create reproducible results, use it
             if args.fedkt_seed is not None:
                 np.random.seed(args.fedkt_seed)
                 torch.manual_seed(args.fedkt_seed)
             if args.model == 'tree' or args.model == 'gbdt' or args.model == 'random_forest' or args.model == 'gbdt_ntree' or args.model == 'gbdt_tree':
                 logger.info("Initializing trees")
+                # if there is only one teacher in a partition, don't split the data nor use PATE
                 if args.n_teacher_each_partition == 1:
                     args.is_local_split = 0
                     args.train_local_student = 0

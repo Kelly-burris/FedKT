@@ -56,6 +56,7 @@ def init_trees(max_tree_depth, n_parties, n_local_models, task_type, args):
 
 
 def compute_tree_ensemble_accuracy(trees, X_test, y_test):
+
     y_pred_prob = np.zeros(len(list(y_test)))
     # print("local trees size:", len(trees))
     weights_list = prepare_uniform_weights(2, len(trees))
